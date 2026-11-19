@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.multi.mapper.dm.EaiHmgcOtaResultMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into "eai_hmgc_ota_result" ("VIN", "CAR_MODEL",
+        "SOURCE_VERSION", "TARGET_VERSION", "TGT_VER",
+        "DOWNLOAD_SUCC_YN", "DOWNLOAD_TIME", "DOWNLOAD_RESULT",
+        "UPDATE_RESULT", "UPDATE_TIME", "UPDATE_STATUS_RESULT", "CREATED_AT")
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.vin,jdbcType=VARCHAR}, #{item.carModel,jdbcType=VARCHAR},
+            #{item.sourceVersion,jdbcType=VARCHAR}, #{item.targetVersion,jdbcType=VARCHAR},
+            #{item.tgtVer,jdbcType=VARCHAR}, #{item.downloadSuccYn,jdbcType=VARCHAR}, #{item.downloadTime,jdbcType=TIMESTAMP},
+            #{item.downloadResult,jdbcType=VARCHAR}, #{item.updateResult,jdbcType=VARCHAR}, #{item.updateTime,jdbcType=TIMESTAMP},
+            #{item.updateStatusResult,jdbcType=VARCHAR}, #{item.createdAt,jdbcType=TIMESTAMP})
+        </foreach>
+    </insert>
+
+    <select id="getHmgcDownloadingOrUpdating" resultType="com.example.multi.model.EaiHmgcOtaResult">
+        SELECT *
+        FROM "dm"."eai_hmgc_ota_result"
+        WHERE "CREATED_AT" BETWEEN NOW() - (#{days} || ' days')::interval AND NOW()
+        AND "DOWNLOAD_RESULT" = ''
+
+        UNION ALL
+
+        SELECT *
+        FROM "dm"."eai_hmgc_ota_result"
+        WHERE "CREATED_AT" BETWEEN NOW() - (#{days} || ' days')::interval AND NOW()
+        AND "DOWNLOAD_SUCC_YN" = 'Y' AND "UPDATE_RESULT" = ''
+    </select>
+
+    <update id="updateHmgcOtaResultByIdSelective" parameterType="com.example.multi.model.EaiHmgcOtaResult">
+        update "dm"."eai_hmgc_ota_result"
+        <set>
+            <if test="downloadSuccYn != null">
+                "DOWNLOAD_SUCC_YN" = #{downloadSuccYn,jdbcType=VARCHAR},
+            </if>
+            <if test="downloadTime != null">
+                "DOWNLOAD_TIME" = #{downloadTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="downloadResult != null">
+                "DOWNLOAD_RESULT" = #{downloadResult,jdbcType=VARCHAR},
+            </if>
+            <if test="updateResult != null">
+                "UPDATE_RESULT" = #{updateResult,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null">
+                "UPDATE_TIME" = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateStatusResult != null">
+                "UPDATE_STATUS_RESULT" = #{updateStatusResult,jdbcType=VARCHAR},
+            </if>
+            <if test="linkYn != null">
+                "LINK_YN" = #{linkYn,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where "ID" = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="getUpdateFailedList" parameterType="com.example.multi.vo.QueryUpdateFailedVO"
+            resultType="com.example.multi.model.EaiHmgcOtaResult">
+        SELECT *
+        FROM "dm"."eai_hmgc_ota_result"
+        WHERE "CREATED_AT" BETWEEN NOW() - (#{days} || ' days')::interval AND NOW()
+        AND "UPDATE_RESULT" IN
+        <foreach collection="updateErrCodeList" item="updateErrCode" separator="," open="(" close=")">
+            #{updateErrCode}
+        </foreach>
+    </select>
+</mapper>

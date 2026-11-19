@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.multi.mapper.portal.CommonCodeMapper">
+
+    <select id="selectCommonCodeList" parameterType="com.example.multi.model.CommonCode" resultType="hMap">
+        SELECT "CD"
+        <choose>
+            <when test='langCd=="en"'>
+                ,"CD_ENNM" AS "CD_NM"
+            </when>
+            <when test='langCd=="zh"'>
+                ,"CD_ZHNM" AS "CD_NM"
+            </when>
+            <otherwise>
+                ,"CD_NM" AS "CD_NM"
+            </otherwise>
+        </choose>
+        ,"CD_VAL"
+        ,"CD_OPT1"
+        ,"CD_OPT2"
+        ,"CD_OPT3"
+        FROM "COMMON_CODE"
+        WHERE "PRNT_CD"=#{prntCd}
+        ORDER BY "SORTSEQ", "CD", length("CD");
+    </select>
+</mapper>

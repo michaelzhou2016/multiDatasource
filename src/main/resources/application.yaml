@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: multi-datasource
+  datasource:
+    portal:
+      jdbc-url: jdbc:postgresql://h1:5432/otaportal?currentSchema=portal&stringtype=unspecified&rewriteBatchedInserts=true
+      username: u1
+      password: p1
+      driver-class-name: org.postgresql.Driver
+    dm:
+      jdbc-url: jdbc:postgresql://h2:5432/otadm?currentSchema=dm&stringtype=unspecified&rewriteBatchedInserts=true
+      username: u2
+      password: p2
+      driver-class-name: org.postgresql.Driver
+  mongodb:
+    uri: mongodb://u:p@h1:27017,1h2:27017/ota?replicaSet=rep-x&authSource=admin
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    com.example.multi.mapper.portal: DEBUG
+#    org.mongodb.driver: DEBUG
